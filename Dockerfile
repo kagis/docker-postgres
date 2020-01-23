@@ -172,7 +172,7 @@ RUN set -x \
   json-c \
   icu \
   openssl \
-  llvm8 \
+  llvm8
 
 FROM scratch
 COPY --from=postgres_base / /
