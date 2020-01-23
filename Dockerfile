@@ -71,7 +71,7 @@ RUN set -x \
   --with-python \
   --with-icu \
   --with-openssl \
-  --with-llvm \
+  --with-llvm LLVM_CONFIG=/usr/lib/llvm8/bin/llvm-config \
  && make \
  && make install \
  && apk del .build-deps \
@@ -96,8 +96,8 @@ RUN set -x \
   json-c-dev \
   protobuf-c-dev \
   sqlite-dev \
-  llvm8-dev \
   clang-dev \
+  llvm8-dev \
  \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
