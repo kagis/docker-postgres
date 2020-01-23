@@ -60,7 +60,8 @@ RUN set -x \
   automake \
   libtool \
   clang-dev \
-  llvm8-dev \
+  --repository https://mirror.ps.kz/alpine/v3.11/community \
+  llvm5-dev \
  \
  && cd /tmp/postgres-* \
  && ./configure \
@@ -71,7 +72,7 @@ RUN set -x \
   --with-python \
   --with-icu \
   --with-openssl \
-  --with-llvm LLVM_CONFIG=/usr/lib/llvm8/bin/llvm-config \
+  --with-llvm LLVM_CONFIG=/usr/lib/llvm5/bin/llvm-config \
  && make \
  && make install \
  && apk del .build-deps \
@@ -97,7 +98,8 @@ RUN set -x \
   protobuf-c-dev \
   sqlite-dev \
   clang-dev \
-  llvm8-dev \
+  --repository https://mirror.ps.kz/alpine/v3.11/community \
+  llvm5-dev \
  \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
@@ -116,7 +118,8 @@ RUN set -x \
   --repository https://mirror.ps.kz/alpine/v3.11/main \
   build-base \
   clang \
-  llvm8-dev \
+  --repository https://mirror.ps.kz/alpine/v3.11/community \
+  llvm5-dev \
  \
  && cd /tmp/pg_cron-* \
  # https://github.com/citusdata/pg_cron/issues/9#issuecomment-269188155
@@ -135,7 +138,8 @@ RUN set -x \
   --repository https://mirror.ps.kz/alpine/v3.11/main \
   build-base \
   clang \
-  llvm8-dev \
+  --repository https://mirror.ps.kz/alpine/v3.11/community \
+  llvm5-dev \
  \
  && cd /tmp/pg_json_decoding-* \
  && make \
@@ -152,8 +156,9 @@ RUN set -x \
   --repository https://mirror.ps.kz/alpine/v3.11/main \
   build-base \
   clang \
-  llvm8-dev \
   openssl-dev \
+  --repository https://mirror.ps.kz/alpine/v3.11/community \
+  llvm5-dev \
  \
  && cd /tmp/pg_json_log-* \
  && make \
@@ -172,7 +177,8 @@ RUN set -x \
   json-c \
   icu \
   openssl \
-  llvm8
+  --repository https://mirror.ps.kz/alpine/v3.11/community \
+  llvm5 \
 
 FROM scratch
 COPY --from=postgres_base / /
