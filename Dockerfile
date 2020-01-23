@@ -1,10 +1,10 @@
-FROM alpine:3.11 AS geos
+FROM alpine:3.10 AS geos
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/libgeos/geos/archive/3.8.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.11/main \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
   build-base \
   automake \
   autoconf \
@@ -18,13 +18,13 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.11 AS proj
+FROM alpine:3.10 AS proj
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/OSGeo/PROJ/archive/6.2.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.11/main \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
   build-base \
   autoconf \
   automake \
@@ -40,13 +40,13 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.11 AS postgres_base
+FROM alpine:3.10 AS postgres_base
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/postgres/postgres/archive/REL_11_4.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.11/main \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
   build-base \
   linux-headers \
   bison \
@@ -85,7 +85,7 @@ RUN set -x \
  && wget -qO- https://github.com/postgis/postgis/archive/2.5.3.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.11/main \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
   build-base \
   autoconf \
   automake \
@@ -113,7 +113,7 @@ RUN set -x \
  && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.2.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.11/main \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
   build-base \
   clang \
   llvm8-dev \
@@ -132,7 +132,7 @@ RUN set -x \
  && wget -qO- https://github.com/kagis/pg_json_decoding/archive/b34e9779dfbd484d3ed09134ac33c1046da5a7bc.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.11/main \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
   build-base \
   clang \
   llvm8-dev \
@@ -149,7 +149,7 @@ RUN set -x \
  && wget -qO- https://github.com/kagis/pg_json_log/archive/68130f628cf112534a1ff713eb50eb2eb714cd58.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.11/main \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
   build-base \
   clang \
   openssl-dev \
@@ -164,7 +164,7 @@ RUN set -x \
 RUN set -x \
  && apk add --no-cache \
   --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.11/main \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
   libxml2 \
   libxslt \
   python3 \
