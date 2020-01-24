@@ -177,5 +177,6 @@ RUN set -x \
 FROM scratch
 COPY --from=postgres_base / /
 ENV PGDATA=/var/lib/postgresql/data
+RUN install -o postgres -g postgres -m 700 -d $PGDATA
 EXPOSE 5432
 USER postgres
