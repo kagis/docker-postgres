@@ -18,10 +18,10 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.10 AS proj
+FROM alpine:3.10 AS proj_gdal
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/6.2.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/6.3.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
   --repository https://mirror.ps.kz/alpine/v3.10/main \
@@ -35,6 +35,23 @@ RUN set -x \
  && cd /tmp/PROJ-* \
  && ./autogen.sh \
  && ./configure \
+ && make \
+ && make install \
+ && apk del .build-deps \
+ && rm -r /tmp/*
+
+RUN set -x \
+ && cd /tmp \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.0.3.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps \
+  --repositories-file /dev/null \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  build-base \
+  linux-headers \
+  sqlite-dev \
+ \
+ && cd /tmp/gdal-*/gdal \
+ && ./configure --without-libtool --enable-lto \
  && make \
  && make install \
  && apk del .build-deps \
@@ -79,7 +96,7 @@ RUN set -x \
 
 # postgis
 COPY --from=geos /usr/local /usr/local
-COPY --from=proj /usr/local /usr/local
+COPY --from=proj_gdal /usr/local /usr/local
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/postgis/postgis/archive/2.5.3.tar.gz | tar xz \
@@ -101,9 +118,10 @@ RUN set -x \
  \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
- && ./configure --without-raster \
+ && ./configure \
  && make \
  && make install \
+ && make comments-install \
  && apk del .build-deps \
  && rm -r /tmp/*
 
@@ -172,11 +190,34 @@ RUN set -x \
   json-c \
   icu \
   openssl \
-  llvm8
+  llvm8 \
+ && install -o postgres -g postgres -m 700 -d \
+  /var/lib/postgresql/data \
+  /var/lib/postgresql/conf \
+  /var/lib/postgresql/init
+
+COPY conf /var/lib/postgresql/conf
+COPY migrate_and_start.sh /var/lib/postgresql/
 
 FROM scratch
+MAINTAINER Vladislav Nezhutin <exe-dealer@yandex.ru>
 COPY --from=postgres_base / /
+WORKDIR /var/lib/postgresql
 ENV PGDATA=/var/lib/postgresql/data
-RUN install -o postgres -g postgres -m 700 -d $PGDATA
-EXPOSE 5432
 USER postgres
+EXPOSE 5432
+CMD ["/bin/sh", "migrate_and_start.sh"]
+
+ONBUILD COPY . ./
+ONBUILD RUN set -x \
+ && initdb \
+ && rm $PGDATA/postgresql.conf $PGDATA/pg_hba.conf \
+ && pg_ctl -w start -o "-c config_file=conf/postgresql.conf -c log_statement=all" \
+ && (cd init && psql -v ON_ERROR_STOP=1 -f init.sql) \
+ && find migrations -type f -mindepth 2 -maxdepth 2 -name '*.sql' \
+  # find latest migration for each db
+  | sort -r | awk -F/ '{ print $3, $2 }' | uniq -f1 | awk '{ print $2, $1 }' \
+  | xargs -rn2 printf "ALTER DATABASE \"%s\" SET migration.latest = '%s';\n" \
+  | psql -v ON_ERROR_STOP=1 \
+ && pg_ctl -w stop
+ONBUILD VOLUME $PGDATA
