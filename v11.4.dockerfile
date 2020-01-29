@@ -202,6 +202,8 @@ COPY migrate_and_start.sh /var/lib/postgresql/
 FROM scratch
 MAINTAINER Vladislav Nezhutin <exe-dealer@yandex.ru>
 COPY --from=postgres_base / /
+# FIXME hub.docker.com does not preserve ownership
+RUN chown -R postgres:postgres /var/lib/postgresql
 WORKDIR /var/lib/postgresql
 ENV PGDATA=/var/lib/postgresql/data
 USER postgres
