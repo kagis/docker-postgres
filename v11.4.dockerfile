@@ -125,6 +125,24 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
+# pgsql-http
+RUN set -x \
+ && cd /tmp \
+ && wget -qO- https://github.com/pramsey/pgsql-http/archive/v1.3.1.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps \
+  --repositories-file /dev/null \
+  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  build-base \
+  curl-dev \
+  clang \
+  llvm8-dev \
+ \
+ && cd /tmp/pgsql-http-* \
+ && make \
+ && make install \
+ && apk del .build-deps \
+ && rm -r /tmp/*
+
 # pg_cron
 RUN set -x \
  && cd /tmp \
@@ -190,6 +208,7 @@ RUN set -x \
   json-c \
   icu \
   openssl \
+  libcurl \
   llvm8 \
  && install -o postgres -g postgres -m 700 -d \
   /var/lib/postgresql/data \
