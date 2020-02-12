@@ -165,7 +165,7 @@ RUN set -x \
 # pg_json_decoding
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/kagis/pg_json_decoding/archive/b34e9779dfbd484d3ed09134ac33c1046da5a7bc.tar.gz | tar xz \
+ && wget -qO- https://github.com/kagis/pg_json_decoding/archive/77b3f82094e6f590eb01d951d023d2736947abf6.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
   --repository https://mirror.ps.kz/alpine/v3.10/main \
