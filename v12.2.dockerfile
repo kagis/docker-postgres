@@ -29,6 +29,8 @@ RUN set -x \
   autoconf \
   automake \
   libtool \
+  tiff-dev \
+  curl-dev \
   sqlite \
   sqlite-dev \
  \
