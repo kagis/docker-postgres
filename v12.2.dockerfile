@@ -21,7 +21,7 @@ RUN set -x \
 FROM alpine:3.10 AS proj_gdal
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/7.0.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/6.3.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
   --repository https://mirror.ps.kz/alpine/v3.10/main \
@@ -29,8 +29,6 @@ RUN set -x \
   autoconf \
   automake \
   libtool \
-  tiff-dev \
-  curl-dev \
   sqlite \
   sqlite-dev \
  \
