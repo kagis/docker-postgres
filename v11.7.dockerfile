@@ -60,7 +60,7 @@ RUN set -x \
 FROM alpine:3.10 AS postgres_base
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_11_4.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_11_7.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
   --repository https://mirror.ps.kz/alpine/v3.10/main \
@@ -91,6 +91,9 @@ RUN set -x \
   --with-llvm LLVM_CONFIG=/usr/lib/llvm8/bin/llvm-config \
  && make \
  && make install \
+ && cd contrib \
+ && make \
+ && make install \
  && apk del .build-deps \
  && rm -r /tmp/*
 
@@ -99,7 +102,7 @@ COPY --from=geos /usr/local /usr/local
 COPY --from=proj_gdal /usr/local /usr/local
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgis/postgis/archive/2.5.3.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgis/postgis/archive/2.5.4.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   --repositories-file /dev/null \
   --repository https://mirror.ps.kz/alpine/v3.10/main \
