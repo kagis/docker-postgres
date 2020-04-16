@@ -91,6 +91,9 @@ RUN set -x \
   --with-llvm LLVM_CONFIG=/usr/lib/llvm8/bin/llvm-config \
  && make \
  && make install \
+ && cd contrib \
+ && make \
+ && make install \
  && apk del .build-deps \
  && rm -r /tmp/*
 
