@@ -236,12 +236,12 @@ ONBUILD COPY . ./
 ONBUILD RUN set -x \
  && initdb \
  && rm $PGDATA/postgresql.conf $PGDATA/pg_hba.conf \
- && pg_ctl -w start -o "-c config_file=conf/postgresql.conf -c log_statement=all" \
+ && pg_ctl --silent --wait start -o "-c config_file=conf/postgresql.on_migration.conf" \
  && (cd init && psql -v ON_ERROR_STOP=1 -f init.sql) \
  && find migrations -type f -mindepth 2 -maxdepth 2 -name '*.sql' \
   # find latest migration for each db
   | sort -r | awk -F/ '{ print $3, $2 }' | uniq -f1 | awk '{ print $2, $1 }' \
   | xargs -rn2 printf "ALTER DATABASE \"%s\" SET migration.latest = '%s';\n" \
   | psql -v ON_ERROR_STOP=1 \
- && pg_ctl -w stop
+ && pg_ctl --silent --wait stop
 ONBUILD VOLUME $PGDATA

@@ -1,9 +1,10 @@
 #!/bin/sh
 set -e
 
-PGOPTS="-c config_file=conf/postgresql.conf $PGOPTS"
+pg_ctl --silent --wait start --timeout 3600 \
+  -o "-c config_file=conf/postgresql.on_migration.conf"
 
-pg_ctl -w start --timeout 3600 -o "$PGOPTS -c log_statement=all"
+export MIGRATION_FAILED
 
 find migrations -type d -mindepth 1 -maxdepth 1 -exec basename {} ';' \
 | xargs -I %DB% psql -d %DB% --no-align --tuples-only --field-separator ' ' -P null=. \
@@ -12,18 +13,14 @@ find migrations -type d -mindepth 1 -maxdepth 1 -exec basename {} ';' \
 | xargs -rn2 sh -c $'
   psql -d "$0" -v ON_ERROR_STOP=1 --single-transaction \
     -f "migrations/$0/$1" \
-    -c "ALTER DATABASE \"$0\" SET migration.latest = \'$1\'" '
+    -c "ALTER DATABASE \"$0\" SET migration.latest = \'$1\'" \
+  || exit 255' \
+|| MIGRATION_FAILED=1
 
-pg_ctl -w stop
-
-# теперь, после выполения миграций, разрешаем конектиться к постгресу
-PGOPTS="$PGOPTS -c listen_addresses=0.0.0.0"
+pg_ctl --silent --wait stop
 
 if [ $MIGRATION_FAILED ]; then
-  # если миграции не выполнились успешно, то запрещаем подключаться
-  # к постгресу всем пользователям кроме `postgres` чтобы можно
-  # было подконектиться и починить руками
-  PGOPTS="$PGOPTS -c hba_file=conf/pg_hba.on_migration_fail.conf"
+  exec postgres -c config_file=conf/postgresql.on_migration_fail.conf $PGOPTS
 fi
 
-exec postgres $PGOPTS
+exec postgres -c config_file=conf/postgresql.conf $PGOPTS
