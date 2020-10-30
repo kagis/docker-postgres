@@ -1,10 +1,10 @@
-FROM alpine:3.10 AS geos
+FROM alpine:3.12 AS geos
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/libgeos/geos/archive/3.8.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.8.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   build-base \
   automake \
   autoconf \
@@ -18,13 +18,13 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.10 AS proj_gdal
+FROM alpine:3.12 AS proj_gdal
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/6.3.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/6.3.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   build-base \
   autoconf \
   automake \
@@ -42,10 +42,10 @@ RUN set -x \
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.0.4.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.1.4.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   build-base \
   linux-headers \
   sqlite-dev \
@@ -57,13 +57,13 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.10 AS postgres_base
+FROM alpine:3.12 AS postgres_base
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_12_2.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_13_0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   build-base \
   linux-headers \
   bison \
@@ -77,7 +77,7 @@ RUN set -x \
   automake \
   libtool \
   clang-dev \
-  llvm8-dev \
+  llvm10-dev \
  \
  && cd /tmp/postgres-* \
  && ./configure \
@@ -88,7 +88,7 @@ RUN set -x \
   --with-python \
   --with-icu \
   --with-openssl \
-  --with-llvm LLVM_CONFIG=/usr/lib/llvm8/bin/llvm-config \
+  --with-llvm LLVM_CONFIG=/usr/lib/llvm10/bin/llvm-config \
  && make \
  && make install \
  && cd contrib \
@@ -102,10 +102,10 @@ COPY --from=geos /usr/local /usr/local
 COPY --from=proj_gdal /usr/local /usr/local
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgis/postgis/archive/3.0.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.0.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   build-base \
   autoconf \
   automake \
@@ -117,7 +117,7 @@ RUN set -x \
   protobuf-c-dev \
   sqlite-dev \
   clang-dev \
-  llvm8-dev \
+  llvm10-dev \
  \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
@@ -133,12 +133,12 @@ RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/pramsey/pgsql-http/archive/v1.3.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   build-base \
   curl-dev \
   clang \
-  llvm8-dev \
+  llvm10-dev \
  \
  && cd /tmp/pgsql-http-* \
  && make \
@@ -149,13 +149,13 @@ RUN set -x \
 # pg_cron
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.2.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.3.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   build-base \
   clang \
-  llvm8-dev \
+  llvm10-dev \
  \
  && cd /tmp/pg_cron-* \
  # https://github.com/citusdata/pg_cron/issues/9#issuecomment-269188155
@@ -168,13 +168,13 @@ RUN set -x \
 # pg_json_decoding
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/kagis/pg_json_decoding/archive/77b3f82094e6f590eb01d951d023d2736947abf6.tar.gz | tar xz \
+ && wget -qO- https://github.com/kagis/pg_json_decoding/archive/v20201030.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   build-base \
   clang \
-  llvm8-dev \
+  llvm10-dev \
  \
  && cd /tmp/pg_json_decoding-* \
  && make \
@@ -185,14 +185,14 @@ RUN set -x \
 # pg_json_log
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/kagis/pg_json_log/archive/68130f628cf112534a1ff713eb50eb2eb714cd58.tar.gz | tar xz \
+ && wget -qO- https://github.com/kagis/pg_json_log/archive/v20201030.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   build-base \
   clang \
   openssl-dev \
-  llvm8-dev \
+  llvm10-dev \
  \
  && cd /tmp/pg_json_log-* \
  && make \
@@ -202,8 +202,8 @@ RUN set -x \
 
 RUN set -x \
  && apk add --no-cache \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
+  # --repositories-file /dev/null \
+  # --repository https://mirror.ps.kz/alpine/v3.12/main \
   libxml2 \
   libxslt \
   python3 \
@@ -212,7 +212,12 @@ RUN set -x \
   icu \
   openssl \
   libcurl \
-  llvm8 \
+  llvm10 \
+ && adduser --uid 70 \
+   --disabled-password \
+   --home /var/lib/postgresql \
+   --no-create-home \
+   postgres \
  && install -o postgres -g postgres -m 700 -d \
   /var/lib/postgresql/data \
   /var/lib/postgresql/conf \
