@@ -197,7 +197,7 @@ RUN set -x \
   openssl \
   libcurl \
   tiff \
-  llvm10 \
+  llvm11 \
  && adduser --uid 70 \
    --disabled-password \
    --home /var/lib/postgresql \
@@ -207,6 +207,10 @@ RUN set -x \
   /var/lib/postgresql/data \
   /var/lib/postgresql/conf \
   /var/lib/postgresql/init
+
+RUN set -x \
+ && rm /usr/local/lib/*.a \
+ && rm -r /usr/local/include
 
 COPY conf /var/lib/postgresql/conf
 COPY migrate_and_start.sh /var/lib/postgresql/
