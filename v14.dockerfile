@@ -1,7 +1,7 @@
 FROM alpine:3.14 AS geos
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/libgeos/geos/archive/3.8.2.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.9.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   automake \
@@ -19,7 +19,7 @@ RUN set -x \
 FROM alpine:3.14 AS proj_gdal
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/8.1.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/8.1.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   autoconf \
@@ -40,7 +40,7 @@ RUN set -x \
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.3.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.3.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   linux-headers \
@@ -58,7 +58,7 @@ RUN set -x \
 FROM alpine:3.14 AS postgres_base
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_14_BETA3.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_14_0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   linux-headers \
@@ -98,7 +98,7 @@ COPY --from=geos /usr/local /usr/local
 COPY --from=proj_gdal /usr/local /usr/local
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgis/postgis/archive/3.1.3.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.1.4.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   autoconf \
@@ -143,7 +143,7 @@ RUN set -x \
 # pg_cron
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/citusdata/pg_cron/archive/9d8f81731db341f1bf9dc11b84743db1b93d69bf.tar.gz | tar xz \
+ && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.4.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   clang \
