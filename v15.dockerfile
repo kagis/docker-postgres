@@ -15,7 +15,7 @@ RUN set -x \
 FROM alpine:3.16 AS proj_gdal
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.0.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/9.1.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake sqlite sqlite-dev tiff-dev curl-dev \
  && cd /tmp/PROJ-* \
  && mkdir build \
@@ -42,7 +42,7 @@ RUN set -x \
 FROM alpine:3.16 AS postgres_base
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_15_BETA2.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_15_BETA4.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   linux-headers \
@@ -81,7 +81,8 @@ COPY --from=geos /usr/local /usr/local
 COPY --from=proj_gdal /usr/local /usr/local
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgis/postgis/archive/3.3.0beta2.tar.gz | tar xz \
+ # && wget -qO- https://github.com/postgis/postgis/archive/3.3.0.tar.gz | tar xz \
+ && wget -qO- https://postgis.net/stuff/postgis-3.3.1dev.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   autoconf \
