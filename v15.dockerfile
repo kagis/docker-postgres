@@ -1,7 +1,7 @@
-FROM alpine:3.16 AS geos
+FROM alpine:3.17 AS geos
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/libgeos/geos/archive/3.11.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.11.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake \
  && cd /tmp/geos-* \
  && mkdir build \
@@ -12,10 +12,10 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.16 AS proj_gdal
+FROM alpine:3.17 AS proj_gdal
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.1.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/9.1.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake sqlite sqlite-dev tiff-dev curl-dev \
  && cd /tmp/PROJ-* \
  && mkdir build \
@@ -28,7 +28,7 @@ RUN set -x \
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.5.2.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.6.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
  && cd /tmp/gdal-* \
  && mkdir build \
@@ -39,10 +39,10 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.16 AS postgres_base
+FROM alpine:3.17 AS postgres_base
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_15_0.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_15_1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   linux-headers \
@@ -53,11 +53,12 @@ RUN set -x \
   libxslt-dev \
   icu-dev \
   openssl-dev \
+  lz4-dev \
   autoconf \
   automake \
   libtool \
   clang-dev \
-  llvm13-dev \
+  llvm15-dev \
   \
  && cd /tmp/postgres-* \
  && ./configure \
@@ -68,6 +69,7 @@ RUN set -x \
   --with-python \
   --with-icu \
   --with-openssl \
+  --with-lz4 \
  && make \
  && make install \
  && cd contrib \
@@ -81,7 +83,7 @@ COPY --from=geos /usr/local /usr/local
 COPY --from=proj_gdal /usr/local /usr/local
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgis/postgis/archive/3.3.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.3.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   autoconf \
@@ -96,7 +98,7 @@ RUN set -x \
   tiff-dev \
   curl-dev \
   clang-dev \
-  llvm13-dev \
+  llvm15-dev \
   \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
@@ -113,7 +115,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.4.2.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base clang llvm13-dev \
+ && apk add --no-cache --virtual .build-deps build-base clang llvm15-dev \
  && cd /tmp/pg_cron-* \
  && make \
  && make install \
@@ -129,9 +131,10 @@ RUN set -x \
   json-c \
   icu \
   openssl \
+  lz4-libs \
   libcurl \
   tiff \
-  llvm13 \
+  llvm15-libs \
  && adduser --uid 70 \
   --disabled-password \
   --home /var/lib/postgresql \
@@ -139,7 +142,8 @@ RUN set -x \
 
 RUN set -x \
  && rm /usr/local/lib/*.a \
- && rm -r /usr/local/include
+ # && rm -r /usr/local/include \
+ ;
 
 FROM scratch
 MAINTAINER Vladislav Nezhutin <exe-dealer@yandex.ru>
@@ -170,6 +174,7 @@ RUN mkdir $PGDATA \
   \
  && printf %s\\n \
   "listen_addresses='0.0.0.0'" \
+  "default_toast_compression=lz4" \
   "shared_buffers=128MB" \
   "work_mem=32MB" \
   "wal_level=logical" \
