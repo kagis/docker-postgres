@@ -1,7 +1,7 @@
-FROM alpine:3.17 AS geos
+FROM alpine:3.17.3 AS geos
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/libgeos/geos/archive/3.11.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.11.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake \
  && cd /tmp/geos-* \
  && mkdir build \
@@ -12,10 +12,10 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.17 AS proj_gdal
+FROM alpine:3.17.3 AS proj_gdal
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.1.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/9.2.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake sqlite sqlite-dev tiff-dev curl-dev \
  && cd /tmp/PROJ-* \
  && mkdir build \
@@ -28,7 +28,7 @@ RUN set -x \
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.6.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.6.4.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
  && cd /tmp/gdal-* \
  && mkdir build \
@@ -39,15 +39,16 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.17 AS postgres_base
+FROM alpine:3.17.3 AS postgres_base
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_15_1.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_15_2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   linux-headers \
   bison \
   flex \
+  readline-dev \
   python3-dev \
   libxml2-dev \
   libxslt-dev \
@@ -63,7 +64,6 @@ RUN set -x \
  && cd /tmp/postgres-* \
  && ./configure \
   --prefix=/usr/local \
-  --without-readline \
   --with-libxml \
   --with-libxslt \
   --with-python \
@@ -103,8 +103,6 @@ RUN set -x \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
  && ./configure \
-  # topology breaks `make install`, don't know how to fix
-  --without-topology \
  && make \
  && make install \
  && make comments-install \
@@ -114,7 +112,7 @@ RUN set -x \
 # pg_cron
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.4.2.tar.gz | tar xz \
+ && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.5.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base clang llvm15-dev \
  && cd /tmp/pg_cron-* \
  && make \
@@ -124,6 +122,7 @@ RUN set -x \
 
 RUN set -x \
  && apk add --no-cache \
+  readline \
   libxml2 \
   libxslt \
   python3 \
@@ -135,6 +134,7 @@ RUN set -x \
   libcurl \
   tiff \
   llvm15-libs \
+  jq \
  && adduser --uid 70 \
   --disabled-password \
   --home /var/lib/postgresql \
@@ -148,8 +148,6 @@ RUN set -x \
 FROM scratch
 MAINTAINER Vladislav Nezhutin <exe-dealer@yandex.ru>
 COPY --from=postgres_base / /
-# FIXME hub.docker.com does not preserve ownership
-# RUN chown -R postgres:postgres /var/lib/postgresql
 USER postgres
 WORKDIR /var/lib/postgresql
 ENV PGDATA=/var/lib/postgresql/data
@@ -201,17 +199,3 @@ RUN mkdir $PGDATA \
   > pg_hba.conf
 
 VOLUME $PGDATA
-
-# ONBUILD COPY . ./
-# ONBUILD RUN set -x \
-#  && initdb \
-#  && rm $PGDATA/postgresql.conf $PGDATA/pg_hba.conf \
-#  && pg_ctl --silent --wait start -o "-c config_file=conf/postgresql.on_migration.conf" \
-#  && (cd init && psql -v ON_ERROR_STOP=1 -f init.sql) \
-#  && find migrations -type f -mindepth 2 -maxdepth 2 -name '*.sql' \
-#   # find latest migration for each db
-#   | sort -r | awk -F/ '{ print $3, $2 }' | uniq -f1 | awk '{ print $2, $1 }' \
-#   | xargs -rn2 printf "ALTER DATABASE \"%s\" SET migration.latest = '%s';\n" \
-#   | psql -v ON_ERROR_STOP=1 \
-#  && pg_ctl --silent --wait stop
-# ONBUILD VOLUME $PGDATA
