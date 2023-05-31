@@ -1,4 +1,4 @@
-FROM alpine:3.17.3 AS geos
+FROM alpine:3.18.0 AS geos
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/libgeos/geos/archive/3.11.2.tar.gz | tar xz \
@@ -12,7 +12,7 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.17.3 AS proj_gdal
+FROM alpine:3.18.0 AS proj_gdal
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/OSGeo/PROJ/archive/9.2.0.tar.gz | tar xz \
@@ -28,7 +28,7 @@ RUN set -x \
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.6.4.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.7.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
  && cd /tmp/gdal-* \
  && mkdir build \
@@ -39,10 +39,10 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-FROM alpine:3.17.3 AS postgres_base
+FROM alpine:3.18.0 AS postgres_base
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_15_2.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_15_3.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   linux-headers \
@@ -59,7 +59,7 @@ RUN set -x \
   automake \
   libtool \
   clang-dev \
-  llvm15-dev \
+  llvm16-dev \
   \
  && cd /tmp/postgres-* \
  && ./configure \
@@ -83,7 +83,7 @@ COPY --from=geos /usr/local /usr/local
 COPY --from=proj_gdal /usr/local /usr/local
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgis/postgis/archive/3.3.2.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.3.3.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   autoconf \
@@ -98,7 +98,7 @@ RUN set -x \
   tiff-dev \
   curl-dev \
   clang-dev \
-  llvm15-dev \
+  llvm16-dev \
   \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
@@ -113,7 +113,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.5.2.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base clang llvm15-dev \
+ && apk add --no-cache --virtual .build-deps build-base clang llvm16-dev \
  && cd /tmp/pg_cron-* \
  && make \
  && make install \
@@ -133,7 +133,7 @@ RUN set -x \
   lz4-libs \
   libcurl \
   tiff \
-  llvm15-libs \
+  llvm16-libs \
   jq \
  && adduser --uid 70 \
   --disabled-password \
