@@ -1,7 +1,7 @@
 FROM alpine:3.18.0 AS geos
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/libgeos/geos/archive/3.11.2.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.12.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake \
  && cd /tmp/geos-* \
  && mkdir build \
@@ -15,7 +15,7 @@ RUN set -x \
 FROM alpine:3.18.0 AS proj_gdal
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.2.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/9.2.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake sqlite sqlite-dev tiff-dev curl-dev \
  && cd /tmp/PROJ-* \
  && mkdir build \
@@ -42,7 +42,7 @@ RUN set -x \
 FROM alpine:3.18.0 AS postgres_base
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_16_BETA1.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_16_BETA2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   linux-headers \
@@ -111,7 +111,7 @@ RUN set -x \
 # pg_cron
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/citusdata/pg_cron/archive/aa3f7220eadc2f8edb8ef1de7673a55bbf4bf6bd.tar.gz | tar xz \
+ && wget -qO- https://github.com/citusdata/pg_cron/archive/1c9fa93c9ffe87801d588bdcc167d0d3157af872.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base clang llvm16-dev \
  && cd /tmp/pg_cron-* \
  && make \
