@@ -1,48 +1,8 @@
-FROM alpine:3.18.0 AS geos
-RUN set -x \
- && cd /tmp \
- && wget -qO- https://github.com/libgeos/geos/archive/3.12.0.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base cmake \
- && cd /tmp/geos-* \
- && mkdir build \
- && cd build \
- && cmake -DCMAKE_BUILD_TYPE=Release .. \
- && cmake --build . \
- && cmake --build . --target install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-FROM alpine:3.18.0 AS proj_gdal
-RUN set -x \
- && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.2.1.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base cmake sqlite sqlite-dev tiff-dev curl-dev \
- && cd /tmp/PROJ-* \
- && mkdir build \
- && cd build \
- && cmake .. \
- && cmake --build . \
- && cmake --build . --target install \
- && apk del .build-deps \
- && rm -r /tmp/*
+FROM alpine:3.19.1
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.7.0.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
- && cd /tmp/gdal-* \
- && mkdir build \
- && cd build \
- && cmake .. \
- && cmake --build . \
- && cmake --build . --target install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-FROM alpine:3.18.0 AS postgres_base
-RUN set -x \
- && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_16_BETA2.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_16_2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   linux-headers \
@@ -59,7 +19,7 @@ RUN set -x \
   automake \
   libtool \
   clang-dev \
-  llvm16-dev \
+  llvm17-dev \
   \
  && cd /tmp/postgres-* \
  && ./configure \
@@ -69,6 +29,7 @@ RUN set -x \
   --with-python \
   --with-ssl=openssl \
   --with-lz4 \
+  --with-system-tzdata=/usr/share/zoneinfo \
  && make \
  && make install \
  && cd contrib \
@@ -77,12 +38,52 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-# postgis
-COPY --from=geos /usr/local /usr/local
-COPY --from=proj_gdal /usr/local /usr/local
+# geos (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgis/postgis/archive/3.3.3.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.12.1.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps build-base cmake \
+ && cd /tmp/geos-* \
+ && mkdir build \
+ && cd build \
+ && cmake -DCMAKE_BUILD_TYPE=Release .. \
+ && cmake --build . \
+ && cmake --build . --target install \
+ && apk del .build-deps \
+ && rm -r /tmp/*
+
+# proj (postgis)
+RUN set -x \
+ && cd /tmp \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/9.3.1.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps build-base cmake sqlite sqlite-dev tiff-dev curl-dev \
+ && cd /tmp/PROJ-* \
+ && mkdir build \
+ && cd build \
+ && cmake .. \
+ && cmake --build . \
+ && cmake --build . --target install \
+ && apk del .build-deps \
+ && rm -r /tmp/*
+
+# gdal (postgis)
+RUN set -x \
+ && cd /tmp \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.8.4.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
+ && cd /tmp/gdal-* \
+ && mkdir build \
+ && cd build \
+ && cmake .. \
+ && cmake --build . \
+ && cmake --build . --target install \
+ && apk del .build-deps \
+ && rm -r /tmp/*
+
+# postgis
+RUN set -x \
+ && cd /tmp \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.4.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base \
   autoconf \
@@ -97,7 +98,7 @@ RUN set -x \
   tiff-dev \
   curl-dev \
   clang-dev \
-  llvm16-dev \
+  llvm17-dev \
   \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
@@ -111,8 +112,8 @@ RUN set -x \
 # pg_cron
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/citusdata/pg_cron/archive/1c9fa93c9ffe87801d588bdcc167d0d3157af872.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base clang llvm16-dev \
+ && wget -qO- https://github.com/citusdata/pg_cron/archive/refs/tags/v1.6.2.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps build-base clang llvm17-dev \
  && cd /tmp/pg_cron-* \
  && make \
  && make install \
@@ -132,7 +133,8 @@ RUN set -x \
   lz4-libs \
   libcurl \
   tiff \
-  llvm16-libs \
+  llvm17-libs \
+  tzdata \
   jq \
  && adduser --uid 70 \
   --disabled-password \
@@ -146,7 +148,7 @@ RUN set -x \
 
 FROM scratch
 MAINTAINER Vladislav Nezhutin <exe-dealer@yandex.ru>
-COPY --from=postgres_base / /
+COPY --from=0 / /
 USER postgres
 WORKDIR /var/lib/postgresql
 ENV PGDATA=/var/lib/postgresql/data
@@ -163,7 +165,7 @@ RUN mkdir $PGDATA \
  && ln -s /dev/stdout log.json  \
   \
  && printf %s\\n \
-  "# config is extracted out of docker volume to make" \
+  "# config is located outside the docker volume to make" \
   "# possible to deploy new config with new docker image" \
   "include '/var/lib/postgresql/postgresql.conf'" \
   "# but you can override settings below if need" \
