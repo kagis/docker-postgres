@@ -1,94 +1,21 @@
-FROM alpine:3.10 AS geos
-RUN set -x \
- && cd /tmp \
- && wget -qO- https://github.com/libgeos/geos/archive/3.8.0.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  build-base \
-  automake \
-  autoconf \
-  libtool \
- \
- && cd /tmp/geos-* \
- && ./autogen.sh \
- && ./configure \
- && make \
- && make install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-FROM alpine:3.10 AS proj_gdal
-RUN set -x \
- && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/6.3.0.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  build-base \
-  autoconf \
-  automake \
-  libtool \
-  sqlite \
-  sqlite-dev \
- \
- && cd /tmp/PROJ-* \
- && ./autogen.sh \
- && ./configure \
- && make \
- && make install \
- && apk del .build-deps \
- && rm -r /tmp/*
+FROM alpine:3.19.1
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.0.3.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_11_22.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  build-base \
-  linux-headers \
-  sqlite-dev \
- \
- && cd /tmp/gdal-*/gdal \
- && ./configure --without-libtool --enable-lto \
- && make \
- && make install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-FROM alpine:3.10 AS postgres_base
-RUN set -x \
- && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_11_9.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  build-base \
-  linux-headers \
-  bison \
-  flex \
-  python3-dev \
-  libxml2-dev \
-  libxslt-dev \
-  icu-dev \
-  openssl-dev \
-  autoconf \
-  automake \
-  libtool \
-  clang-dev \
-  llvm8-dev \
- \
+  build-base autoconf automake libtool bison flex linux-headers \
+  readline-dev python3-dev libxslt-dev icu-dev openssl-dev clang16-dev llvm16-dev \
  && cd /tmp/postgres-* \
- && ./configure \
+ && CLANG=/usr/lib/llvm16/bin/clang ./configure \
   --prefix=/usr/local \
-  --without-readline \
   --with-libxml \
   --with-libxslt \
   --with-python \
   --with-icu \
   --with-openssl \
-  --with-llvm LLVM_CONFIG=/usr/lib/llvm8/bin/llvm-config \
+  --with-llvm LLVM_CONFIG=/usr/lib/llvm16/bin/llvm-config \
+  --with-system-tzdata=/usr/share/zoneinfo \
  && make \
  && make install \
  && cd contrib \
@@ -97,28 +24,55 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-# postgis
-COPY --from=geos /usr/local /usr/local
-COPY --from=proj_gdal /usr/local /usr/local
+# geos (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgis/postgis/archive/2.5.5.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.12.1.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps build-base cmake \
+ && cd /tmp/geos-* \
+ && mkdir build \
+ && cd build \
+ && cmake -DCMAKE_BUILD_TYPE=Release .. \
+ && cmake --build . \
+ && cmake --build . --target install \
+ && apk del .build-deps \
+ && rm -r /tmp/*
+
+# proj (postgis)
+RUN set -x \
+ && cd /tmp \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/6.3.2.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps build-base autoconf automake libtool sqlite-dev \
+ && cd /tmp/PROJ-* \
+ && sed -i '1s;^;#include <cstdint>\n;' src/proj_json_streaming_writer.hpp \
+ && ./autogen.sh \
+ && ./configure \
+ && make \
+ && make install \
+ && apk del .build-deps \
+ && rm -r /tmp/*
+
+# gdal (postgis)
+RUN set -x \
+ && cd /tmp \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.8.4.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
+ && cd /tmp/gdal-* \
+ && mkdir build \
+ && cd build \
+ && cmake .. \
+ && cmake --build . \
+ && cmake --build . --target install \
+ && apk del .build-deps \
+ && rm -r /tmp/*
+
+# postgis
+RUN set -x \
+ && cd /tmp \
+ && wget -qO- https://github.com/postgis/postgis/archive/2.5.11.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  build-base \
-  autoconf \
-  automake \
-  libtool \
-  # postgis не устанаваливается через CREATE EXTENSION без libxslt-dev
-  libxslt-dev \
-  libxml2-dev \
-  json-c-dev \
-  protobuf-c-dev \
-  sqlite-dev \
-  clang-dev \
-  llvm8-dev \
- \
+  build-base autoconf automake libtool libcurl tiff \
+  libxslt-dev json-c-dev protobuf-c-dev sqlite-dev clang16 llvm16-dev \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
  && ./configure \
@@ -132,14 +86,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/pramsey/pgsql-http/archive/v1.3.1.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  build-base \
-  curl-dev \
-  clang \
-  llvm8-dev \
- \
+ && apk add --no-cache --virtual .build-deps build-base curl-dev clang16 llvm16-dev \
  && cd /tmp/pgsql-http-* \
  && make \
  && make install \
@@ -150,13 +97,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.2.0.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  build-base \
-  clang \
-  llvm8-dev \
- \
+ && apk add --no-cache --virtual .build-deps build-base clang16 llvm16-dev \
  && cd /tmp/pg_cron-* \
  # https://github.com/citusdata/pg_cron/issues/9#issuecomment-269188155
  && sed -e s/-Werror//g -i Makefile \
@@ -169,13 +110,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/kagis/pg_json_decoding/archive/77b3f82094e6f590eb01d951d023d2736947abf6.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  build-base \
-  clang \
-  llvm8-dev \
- \
+ && apk add --no-cache --virtual .build-deps build-base clang16 llvm16-dev \
  && cd /tmp/pg_json_decoding-* \
  && make \
  && make install \
@@ -186,14 +121,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/kagis/pg_json_log/archive/68130f628cf112534a1ff713eb50eb2eb714cd58.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  build-base \
-  clang \
-  openssl-dev \
-  llvm8-dev \
- \
+ && apk add --no-cache --virtual .build-deps build-base clang16 llvm16-dev openssl-dev \
  && cd /tmp/pg_json_log-* \
  && make \
  && make install \
@@ -201,18 +129,8 @@ RUN set -x \
  && rm -r /tmp/*
 
 RUN set -x \
- && apk add --no-cache \
-  --repositories-file /dev/null \
-  --repository https://mirror.ps.kz/alpine/v3.10/main \
-  libxml2 \
-  libxslt \
-  python3 \
-  protobuf-c \
-  json-c \
-  icu \
-  openssl \
-  libcurl \
-  llvm8 \
+ && apk add --no-cache readline libxslt python3 protobuf-c json-c icu openssl curl tiff llvm16 tzdata jq \
+ && adduser --uid 70 --disabled-password --home /var/lib/postgresql postgres \
  && install -o postgres -g postgres -m 700 -d \
   /var/lib/postgresql/data \
   /var/lib/postgresql/conf \
@@ -223,12 +141,10 @@ COPY migrate_and_start.sh /var/lib/postgresql/
 
 FROM scratch
 MAINTAINER Vladislav Nezhutin <exe-dealer@yandex.ru>
-COPY --from=postgres_base / /
-# FIXME hub.docker.com does not preserve ownership
-RUN chown -R postgres:postgres /var/lib/postgresql
+COPY --from=0 / /
+USER postgres
 WORKDIR /var/lib/postgresql
 ENV PGDATA=/var/lib/postgresql/data
-USER postgres
 EXPOSE 5432
 CMD ["/bin/sh", "migrate_and_start.sh"]
 
