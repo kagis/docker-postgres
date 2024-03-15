@@ -1,34 +1,31 @@
 FROM alpine:3.19.1
 
 RUN set -x \
+ && apk add --no-cache \
+  readline icu-libs llvm17-libs tzdata \
+  python3 libxml2 libxslt lz4-libs openssl \
+  protobuf-c json-c sqlite tiff curl jq \
+ && adduser --uid 70 \
+  --system \
+  --disabled-password \
+  --home /var/lib/postgresql \
+  postgres
+
+RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/postgres/postgres/archive/REL_16_2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  build-base \
-  linux-headers \
-  bison \
-  flex \
-  readline-dev \
-  python3-dev \
-  libxml2-dev \
-  libxslt-dev \
-  icu-dev \
-  openssl-dev \
-  lz4-dev \
-  autoconf \
-  automake \
-  libtool \
-  clang-dev \
-  llvm17-dev \
-  \
+  build-base automake libtool autoconf bison flex clang17 \
+  readline-dev icu-dev llvm17-dev linux-headers \
+  python3-dev libxml2-dev libxslt-dev lz4-dev openssl-dev \
  && cd /tmp/postgres-* \
  && ./configure \
   --prefix=/usr/local \
+  --with-python \
   --with-libxml \
   --with-libxslt \
-  --with-python \
-  --with-ssl=openssl \
   --with-lz4 \
+  --with-ssl=openssl \
   --with-system-tzdata=/usr/share/zoneinfo \
  && make \
  && make install \
@@ -55,8 +52,8 @@ RUN set -x \
 # proj (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.3.1.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base cmake sqlite sqlite-dev tiff-dev curl-dev \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/9.4.0.tar.gz | tar xz \
+ && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
  && cd /tmp/PROJ-* \
  && mkdir build \
  && cd build \
@@ -85,21 +82,8 @@ RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/postgis/postgis/archive/3.4.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  build-base \
-  autoconf \
-  automake \
-  libtool \
-  # postgis не устанаваливается через CREATE EXTENSION без libxslt-dev
-  libxslt-dev \
-  libxml2-dev \
-  json-c-dev \
-  protobuf-c-dev \
-  sqlite-dev \
-  tiff-dev \
-  curl-dev \
-  clang-dev \
-  llvm17-dev \
-  \
+  build-base autoconf automake libtool \
+  libxslt-dev json-c-dev protobuf-c-dev \
  && cd /tmp/postgis-* \
  && ./autogen.sh \
  && ./configure \
@@ -113,33 +97,12 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  && wget -qO- https://github.com/citusdata/pg_cron/archive/refs/tags/v1.6.2.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base clang llvm17-dev \
+ && apk add --no-cache --virtual .build-deps build-base \
  && cd /tmp/pg_cron-* \
  && make \
  && make install \
  && apk del .build-deps \
  && rm -r /tmp/*
-
-RUN set -x \
- && apk add --no-cache \
-  readline \
-  libxml2 \
-  libxslt \
-  python3 \
-  protobuf-c \
-  json-c \
-  icu \
-  openssl \
-  lz4-libs \
-  libcurl \
-  tiff \
-  llvm17-libs \
-  tzdata \
-  jq \
- && adduser --uid 70 \
-  --disabled-password \
-  --home /var/lib/postgresql \
-  postgres
 
 RUN set -x \
  && rm /usr/local/lib/*.a \
@@ -195,8 +158,9 @@ RUN mkdir $PGDATA \
   > postgresql.conf \
   \
  && printf %s\\n \
-  "#    db     user addr method" \
-  "host all    all  all  trust" \
+  "#     db   user addr method" \
+  "host  all  all  all  trust" \
+  "local all  all       trust" \
   > pg_hba.conf
 
 VOLUME $PGDATA
