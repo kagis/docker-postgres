@@ -1,8 +1,8 @@
-FROM alpine:3.19.1
+FROM alpine:3.20.0
 
 RUN set -x \
  && apk add --no-cache \
-  readline icu-libs llvm17-libs tzdata \
+  readline icu-libs llvm18-libs tzdata \
   python3 libxml2 libxslt lz4-libs openssl \
   protobuf-c json-c sqlite tiff curl jq \
  && adduser --uid 70 \
@@ -13,10 +13,10 @@ RUN set -x \
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_16_2.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_16_3.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
-  build-base automake libtool autoconf bison flex clang17 \
-  readline-dev icu-dev llvm17-dev linux-headers \
+  build-base automake libtool autoconf bison flex clang18 \
+  readline-dev icu-dev llvm18-dev linux-headers \
   python3-dev libxml2-dev libxslt-dev lz4-dev openssl-dev \
  && cd /tmp/postgres-* \
  && ./configure \
@@ -38,7 +38,7 @@ RUN set -x \
 # geos (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/libgeos/geos/archive/3.12.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.12.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake \
  && cd /tmp/geos-* \
  && mkdir build \
@@ -52,7 +52,7 @@ RUN set -x \
 # proj (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.4.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/9.4.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
  && cd /tmp/PROJ-* \
  && mkdir build \
@@ -66,7 +66,7 @@ RUN set -x \
 # gdal (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.8.4.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.9.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
  && cd /tmp/gdal-* \
  && mkdir build \
