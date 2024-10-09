@@ -13,7 +13,7 @@ RUN set -x \
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_17_BETA3.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_17_0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base automake libtool autoconf bison flex clang18 \
   readline-dev icu-dev llvm18-dev linux-headers \
@@ -38,7 +38,7 @@ RUN set -x \
 # geos (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/libgeos/geos/archive/3.12.2.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.13.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake \
  && cd /tmp/geos-* \
  && mkdir build \
@@ -52,7 +52,7 @@ RUN set -x \
 # proj (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.4.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/9.5.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
  && cd /tmp/PROJ-* \
  && mkdir build \
@@ -66,7 +66,7 @@ RUN set -x \
 # gdal (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.9.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.9.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
  && cd /tmp/gdal-* \
  && mkdir build \
@@ -80,7 +80,7 @@ RUN set -x \
 # postgis
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgis/postgis/archive/3.4.2.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.5.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base autoconf automake libtool \
   libxslt-dev json-c-dev protobuf-c-dev \
@@ -96,7 +96,7 @@ RUN set -x \
 # pg_cron
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.6.3.tar.gz | tar xz \
+ && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.6.4.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base \
  && cd /tmp/pg_cron-* \
  && make \
