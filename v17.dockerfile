@@ -1,4 +1,4 @@
-FROM alpine:3.20.2
+FROM alpine:3.20.3
 
 RUN set -x \
  && apk add --no-cache \
@@ -13,7 +13,8 @@ RUN set -x \
 
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_17_0.tar.gz | tar xz \
+ # https://github.com/postgres/postgres/tags
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_17_2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base automake libtool autoconf bison flex clang18 \
   readline-dev icu-dev llvm18-dev linux-headers \
@@ -38,6 +39,7 @@ RUN set -x \
 # geos (postgis)
 RUN set -x \
  && cd /tmp \
+ # https://github.com/libgeos/geos/releases
  && wget -qO- https://github.com/libgeos/geos/archive/3.13.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake \
  && cd /tmp/geos-* \
@@ -52,6 +54,7 @@ RUN set -x \
 # proj (postgis)
 RUN set -x \
  && cd /tmp \
+ # https://github.com/OSGeo/PROJ/releases
  && wget -qO- https://github.com/OSGeo/PROJ/archive/9.5.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
  && cd /tmp/PROJ-* \
@@ -66,7 +69,8 @@ RUN set -x \
 # gdal (postgis)
 RUN set -x \
  && cd /tmp \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.9.2.tar.gz | tar xz \
+ # https://github.com/OSGeo/gdal/releases
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.10.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
  && cd /tmp/gdal-* \
  && mkdir build \
@@ -80,6 +84,7 @@ RUN set -x \
 # postgis
 RUN set -x \
  && cd /tmp \
+ # https://github.com/postgis/postgis/tags
  && wget -qO- https://github.com/postgis/postgis/archive/3.5.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base autoconf automake libtool \
@@ -96,6 +101,7 @@ RUN set -x \
 # pg_cron
 RUN set -x \
  && cd /tmp \
+ # https://github.com/citusdata/pg_cron/releases
  && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.6.4.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base \
  && cd /tmp/pg_cron-* \
@@ -110,7 +116,7 @@ RUN set -x \
  ;
 
 FROM scratch
-MAINTAINER Vladislav Nezhutin <exe-dealer@yandex.ru>
+MAINTAINER Vladislav Nezhutin <exe-dealer@yandex.kz>
 COPY --from=0 / /
 USER postgres
 WORKDIR /var/lib/postgresql
