@@ -1,3 +1,4 @@
+# https://alpinelinux.org/releases/
 FROM alpine:3.21.2
 
 RUN set -x \
@@ -70,7 +71,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  # https://github.com/OSGeo/gdal/releases
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.10.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.10.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
  && cd /tmp/gdal-* \
  && mkdir build \
@@ -85,7 +86,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  # https://github.com/postgis/postgis/tags
- && wget -qO- https://github.com/postgis/postgis/archive/3.5.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.5.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base autoconf automake libtool \
   libxslt-dev json-c-dev protobuf-c-dev \
