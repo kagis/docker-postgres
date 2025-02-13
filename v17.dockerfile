@@ -15,7 +15,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  # https://github.com/postgres/postgres/tags
- && wget -qO- https://github.com/postgres/postgres/archive/REL_17_2.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_17_3.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base automake libtool autoconf bison flex clang19 \
   readline-dev icu-dev llvm19-dev linux-headers \
