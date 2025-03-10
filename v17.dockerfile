@@ -1,5 +1,5 @@
 # https://alpinelinux.org/releases/
-FROM alpine:3.21.2
+FROM alpine:3.21.3
 
 RUN set -x \
  && apk add --no-cache \
@@ -15,7 +15,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  # https://github.com/postgres/postgres/tags
- && wget -qO- https://github.com/postgres/postgres/archive/REL_17_3.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_17_4.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps \
   build-base automake libtool autoconf bison flex clang19 \
   readline-dev icu-dev llvm19-dev linux-headers \
@@ -41,7 +41,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  # https://github.com/libgeos/geos/releases
- && wget -qO- https://github.com/libgeos/geos/archive/3.13.0.tar.gz | tar xz \
+ && wget -qO- https://github.com/libgeos/geos/archive/3.13.1.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake \
  && cd /tmp/geos-* \
  && mkdir build \
@@ -71,7 +71,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  # https://github.com/OSGeo/gdal/releases
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.10.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.10.2.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
  && cd /tmp/gdal-* \
  && mkdir build \
@@ -117,7 +117,7 @@ RUN set -x \
  ;
 
 FROM scratch
-MAINTAINER Vladislav Nezhutin <exe-dealer@yandex.kz>
+LABEL org.opencontainers.image.authors="exe-dealer@yandex.kz"
 COPY --from=0 / /
 USER postgres
 WORKDIR /var/lib/postgresql
