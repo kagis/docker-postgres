@@ -56,7 +56,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  # https://github.com/OSGeo/PROJ/releases
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.5.1.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/PROJ/archive/9.6.0.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
  && cd /tmp/PROJ-* \
  && mkdir build \

@@ -1,6 +1,6 @@
 services:
   pg17:
-    image: docker.kagis.kz/geonomix/postgres:17.4-20250319
+    image: docker.kagis.kz/geonomix/postgres:17.4-20250405
     ports: [6432:5432]
     build:
       dockerfile: v17.dockerfile
