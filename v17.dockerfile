@@ -71,7 +71,7 @@ RUN set -x \
 RUN set -x \
  && cd /tmp \
  # https://github.com/OSGeo/gdal/releases
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.10.2.tar.gz | tar xz \
+ && wget -qO- https://github.com/OSGeo/gdal/archive/v3.10.3.tar.gz | tar xz \
  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
  && cd /tmp/gdal-* \
  && mkdir build \
