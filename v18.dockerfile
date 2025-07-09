@@ -1,20 +1,56 @@
 # https://alpinelinux.org/releases/
-FROM alpine:3.21.3
+FROM alpine:3.22.0
 
 WORKDIR /tmp
 
 RUN set -x \
  && apk add --no-cache \
-  readline icu-libs llvm19-libs tzdata \
+  readline icu-libs llvm20-libs tzdata \
   python3 libxml2 libxslt lz4-libs openssl \
   protobuf-c json-c sqlite tiff curl jq
 
-# https://github.com/postgres/postgres/tags
+# proj https://github.com/OSGeo/PROJ/tags
+RUN set -x \
+  && wget -qO- https://github.com/OSGeo/PROJ/archive/9.6.2.tar.gz | tar -xz --strip-components=1 \
+  && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
+  && mkdir build \
+  && cd build \
+  && cmake .. \
+  && cmake --build . \
+  && cmake --build . --target install \
+  && apk del .build-deps \
+  && rm -r /tmp/*
+
+# geos https://github.com/libgeos/geos/tags
+RUN set -x \
+  && wget -qO- https://github.com/libgeos/geos/archive/3.13.1.tar.gz | tar -xz --strip-components=1 \
+  && apk add --no-cache --virtual .build-deps build-base cmake \
+  && mkdir build \
+  && cd build \
+  && cmake -DCMAKE_BUILD_TYPE=Release .. \
+  && cmake --build . \
+  && cmake --build . --target install \
+  && apk del .build-deps \
+  && rm -r /tmp/*
+
+# gdal https://github.com/OSGeo/gdal/tags
+RUN set -x \
+  && wget -qO- https://github.com/OSGeo/gdal/archive/v3.11.1.tar.gz | tar -xz --strip-components=1 \
+  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
+  && mkdir build \
+  && cd build \
+  && cmake .. \
+  && cmake --build . \
+  && cmake --build . --target install \
+  && apk del .build-deps \
+  && rm -r /tmp/*
+
+# postgres https://github.com/postgres/postgres/tags
 RUN set -x \
  && wget -qO- https://github.com/postgres/postgres/archive/REL_18_BETA1.tar.gz | tar -xz --strip-components=1 \
  && apk add --no-cache --virtual .build-deps \
-  build-base automake libtool autoconf bison flex clang19 \
-  readline-dev icu-dev llvm19-dev linux-headers \
+  build-base automake libtool autoconf bison flex clang20 \
+  readline-dev icu-dev llvm20-dev linux-headers \
   python3-dev libxml2-dev libxslt-dev lz4-dev openssl-dev \
  && ./configure \
   --prefix=/usr/local \
@@ -29,42 +65,6 @@ RUN set -x \
  && cd contrib \
  && make \
  && make install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-# geos https://github.com/libgeos/geos/tags
-RUN set -x \
- && wget -qO- https://github.com/libgeos/geos/archive/3.13.1.tar.gz | tar -xz --strip-components=1 \
- && apk add --no-cache --virtual .build-deps build-base cmake \
- && mkdir build \
- && cd build \
- && cmake -DCMAKE_BUILD_TYPE=Release .. \
- && cmake --build . \
- && cmake --build . --target install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-# proj https://github.com/OSGeo/PROJ/tags
-RUN set -x \
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.6.0.tar.gz | tar -xz --strip-components=1 \
- && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
- && mkdir build \
- && cd build \
- && cmake .. \
- && cmake --build . \
- && cmake --build . --target install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-# gdal https://github.com/OSGeo/gdal/tags
-RUN set -x \
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.11.0.tar.gz | tar -xz --strip-components=1 \
- && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
- && mkdir build \
- && cd build \
- && cmake .. \
- && cmake --build . \
- && cmake --build . --target install \
  && apk del .build-deps \
  && rm -r /tmp/*
 

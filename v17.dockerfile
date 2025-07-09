@@ -1,26 +1,57 @@
 # https://alpinelinux.org/releases/
-FROM alpine:3.21.3
+FROM alpine:3.22.0
+
+WORKDIR /tmp
 
 RUN set -x \
  && apk add --no-cache \
-  readline icu-libs llvm19-libs tzdata \
+  readline icu-libs llvm20-libs tzdata \
   python3 libxml2 libxslt lz4-libs openssl \
-  protobuf-c json-c sqlite tiff curl jq \
- && adduser --uid 70 \
-  --system \
-  --disabled-password \
-  --home /var/lib/postgresql \
-  postgres
+  protobuf-c json-c sqlite tiff curl jq
 
+# proj https://github.com/OSGeo/PROJ/tags
 RUN set -x \
- && cd /tmp \
- # https://github.com/postgres/postgres/tags
- && wget -qO- https://github.com/postgres/postgres/archive/REL_17_5.tar.gz | tar xz \
+  && wget -qO- https://github.com/OSGeo/PROJ/archive/9.6.2.tar.gz | tar -xz --strip-components=1 \
+  && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
+  && mkdir build \
+  && cd build \
+  && cmake .. \
+  && cmake --build . \
+  && cmake --build . --target install \
+  && apk del .build-deps \
+  && rm -r /tmp/*
+
+# geos https://github.com/libgeos/geos/tags
+RUN set -x \
+  && wget -qO- https://github.com/libgeos/geos/archive/3.13.1.tar.gz | tar -xz --strip-components=1 \
+  && apk add --no-cache --virtual .build-deps build-base cmake \
+  && mkdir build \
+  && cd build \
+  && cmake -DCMAKE_BUILD_TYPE=Release .. \
+  && cmake --build . \
+  && cmake --build . --target install \
+  && apk del .build-deps \
+  && rm -r /tmp/*
+
+# gdal https://github.com/OSGeo/gdal/tags
+RUN set -x \
+  && wget -qO- https://github.com/OSGeo/gdal/archive/v3.11.1.tar.gz | tar -xz --strip-components=1 \
+  && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
+  && mkdir build \
+  && cd build \
+  && cmake .. \
+  && cmake --build . \
+  && cmake --build . --target install \
+  && apk del .build-deps \
+  && rm -r /tmp/*
+
+# postgres https://github.com/postgres/postgres/tags
+RUN set -x \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_17_5.tar.gz | tar -xz --strip-components=1 \
  && apk add --no-cache --virtual .build-deps \
-  build-base automake libtool autoconf bison flex clang19 \
-  readline-dev icu-dev llvm19-dev linux-headers \
+  build-base automake libtool autoconf bison flex clang20 \
+  readline-dev icu-dev llvm20-dev linux-headers \
   python3-dev libxml2-dev libxslt-dev lz4-dev openssl-dev \
- && cd /tmp/postgres-* \
  && ./configure \
   --prefix=/usr/local \
   --with-python \
@@ -37,60 +68,12 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-# geos (postgis)
+# postgis https://github.com/postgis/postgis/tags
 RUN set -x \
- && cd /tmp \
- # https://github.com/libgeos/geos/releases
- && wget -qO- https://github.com/libgeos/geos/archive/3.13.1.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base cmake \
- && cd /tmp/geos-* \
- && mkdir build \
- && cd build \
- && cmake -DCMAKE_BUILD_TYPE=Release .. \
- && cmake --build . \
- && cmake --build . --target install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-# proj (postgis)
-RUN set -x \
- && cd /tmp \
- # https://github.com/OSGeo/PROJ/releases
- && wget -qO- https://github.com/OSGeo/PROJ/archive/9.6.0.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
- && cd /tmp/PROJ-* \
- && mkdir build \
- && cd build \
- && cmake .. \
- && cmake --build . \
- && cmake --build . --target install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-# gdal (postgis)
-RUN set -x \
- && cd /tmp \
- # https://github.com/OSGeo/gdal/releases
- && wget -qO- https://github.com/OSGeo/gdal/archive/v3.11.0.tar.gz | tar xz \
- && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
- && cd /tmp/gdal-* \
- && mkdir build \
- && cd build \
- && cmake .. \
- && cmake --build . \
- && cmake --build . --target install \
- && apk del .build-deps \
- && rm -r /tmp/*
-
-# postgis
-RUN set -x \
- && cd /tmp \
- # https://github.com/postgis/postgis/tags
- && wget -qO- https://github.com/postgis/postgis/archive/3.5.2.tar.gz | tar xz \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.5.3.tar.gz | tar -xz --strip-components=1 \
  && apk add --no-cache --virtual .build-deps \
   build-base autoconf automake libtool \
   libxslt-dev json-c-dev protobuf-c-dev \
- && cd /tmp/postgis-* \
  && ./autogen.sh \
  && ./configure \
  && make \
@@ -99,13 +82,10 @@ RUN set -x \
  && apk del .build-deps \
  && rm -r /tmp/*
 
-# pg_cron
+# https://github.com/citusdata/pg_cron/releases
 RUN set -x \
- && cd /tmp \
- # https://github.com/citusdata/pg_cron/releases
- && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.6.5.tar.gz | tar xz \
+ && wget -qO- https://github.com/citusdata/pg_cron/archive/v1.6.5.tar.gz | tar -xz --strip-components=1 \
  && apk add --no-cache --virtual .build-deps build-base \
- && cd /tmp/pg_cron-* \
  && make \
  && make install \
  && apk del .build-deps \
@@ -119,6 +99,7 @@ RUN set -x \
 FROM scratch
 LABEL org.opencontainers.image.authors="exe-dealer@yandex.kz"
 COPY --from=0 / /
+RUN adduser --uid 70 --system --disabled-password --home /var/lib/postgresql postgres
 USER postgres
 WORKDIR /var/lib/postgresql
 ENV PGDATA=/var/lib/postgresql/data
