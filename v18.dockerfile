@@ -1,5 +1,5 @@
 # https://alpinelinux.org/releases/
-FROM alpine:3.22.0
+FROM alpine:3.22.1
 
 WORKDIR /tmp
 
@@ -35,7 +35,7 @@ RUN set -x \
 
 # gdal https://github.com/OSGeo/gdal/tags
 RUN set -x \
-  && wget -qO- https://github.com/OSGeo/gdal/archive/v3.11.1.tar.gz | tar -xz --strip-components=1 \
+  && wget -qO- https://github.com/OSGeo/gdal/archive/v3.11.3.tar.gz | tar -xz --strip-components=1 \
   && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
   && mkdir build \
   && cd build \
@@ -47,7 +47,7 @@ RUN set -x \
 
 # postgres https://github.com/postgres/postgres/tags
 RUN set -x \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_18_BETA1.tar.gz | tar -xz --strip-components=1 \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_18_BETA2.tar.gz | tar -xz --strip-components=1 \
  && apk add --no-cache --virtual .build-deps \
   build-base automake libtool autoconf bison flex clang20 \
   readline-dev icu-dev llvm20-dev linux-headers \
@@ -70,7 +70,7 @@ RUN set -x \
 
 # postgis https://github.com/postgis/postgis/tags
 RUN set -x \
- && wget -qO- https://github.com/postgis/postgis/archive/3.6.0alpha1.tar.gz | tar -xz --strip-components=1 \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.6.0beta1.tar.gz | tar -xz --strip-components=1 \
  && apk add --no-cache --virtual .build-deps \
   build-base autoconf automake libtool \
   libxslt-dev json-c-dev protobuf-c-dev \
@@ -84,7 +84,7 @@ RUN set -x \
 
 # pg_cron https://github.com/citusdata/pg_cron/tags
 RUN set -x \
- && wget -qO- https://github.com/citusdata/pg_cron/archive/d33586c61457863010cb9f07a0063be57340bea2.tar.gz | tar -xz --strip-components=1 \
+ && wget -qO- https://github.com/citusdata/pg_cron/archive/0c7f00b3bec7946a5d54edd62d181e1baf937402.tar.gz | tar -xz --strip-components=1 \
  && apk add --no-cache --virtual .build-deps build-base \
  && make CFLAGS="-Wno-error" \
  && make install \

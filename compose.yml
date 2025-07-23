@@ -1,6 +1,6 @@
 services:
   pg18:
-    image: kagiskz/postgres:18b1-20250703
+    image: kagiskz/postgres:18b2-20250723
     # image: docker.kagis.kz/geonomix/postgres:17.5-20250518
     # ports: [6432:5432]
     build:
