@@ -47,7 +47,7 @@ RUN set -x \
 
 # postgres https://github.com/postgres/postgres/tags
 RUN set -x \
- && wget -qO- https://github.com/postgres/postgres/archive/REL_18_BETA2.tar.gz | tar -xz --strip-components=1 \
+ && wget -qO- https://github.com/postgres/postgres/archive/REL_18_BETA3.tar.gz | tar -xz --strip-components=1 \
  && apk add --no-cache --virtual .build-deps \
   build-base automake libtool autoconf bison flex clang20 \
   readline-dev icu-dev llvm20-dev linux-headers \
