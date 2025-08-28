@@ -23,7 +23,7 @@ RUN set -x \
 
 # geos https://github.com/libgeos/geos/tags
 RUN set -x \
-  && wget -qO- https://github.com/libgeos/geos/archive/3.13.1.tar.gz | tar -xz --strip-components=1 \
+  && wget -qO- https://github.com/libgeos/geos/archive/3.14.0.tar.gz | tar -xz --strip-components=1 \
   && apk add --no-cache --virtual .build-deps build-base cmake \
   && mkdir build \
   && cd build \
@@ -70,7 +70,7 @@ RUN set -x \
 
 # postgis https://github.com/postgis/postgis/tags
 RUN set -x \
- && wget -qO- https://github.com/postgis/postgis/archive/3.6.0beta1.tar.gz | tar -xz --strip-components=1 \
+ && wget -qO- https://github.com/postgis/postgis/archive/3.6.0rc2.tar.gz | tar -xz --strip-components=1 \
  && apk add --no-cache --virtual .build-deps \
   build-base autoconf automake libtool \
   libxslt-dev json-c-dev protobuf-c-dev \
