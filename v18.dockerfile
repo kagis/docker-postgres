@@ -11,7 +11,7 @@ RUN set -x \
 
 # proj https://github.com/OSGeo/PROJ/tags
 RUN set -x \
-  && wget -qO- https://github.com/OSGeo/PROJ/archive/9.6.2.tar.gz | tar -xz --strip-components=1 \
+  && wget -qO- https://github.com/OSGeo/PROJ/archive/9.7.0.tar.gz | tar -xz --strip-components=1 \
   && apk add --no-cache --virtual .build-deps build-base cmake sqlite-dev tiff-dev curl-dev \
   && mkdir build \
   && cd build \
