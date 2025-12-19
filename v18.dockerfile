@@ -1,5 +1,5 @@
 # https://alpinelinux.org/releases/
-FROM alpine:3.23.0
+FROM alpine:3.23.2
 
 WORKDIR /tmp
 
@@ -35,7 +35,7 @@ RUN set -x \
 
 # gdal https://github.com/OSGeo/gdal/tags
 RUN set -x \
-  && wget -qO- https://github.com/OSGeo/gdal/archive/v3.12.0.tar.gz | tar -xz --strip-components=1 \
+  && wget -qO- https://github.com/OSGeo/gdal/archive/v3.12.1.tar.gz | tar -xz --strip-components=1 \
   && apk add --no-cache --virtual .build-deps build-base cmake linux-headers sqlite-dev tiff-dev curl-dev \
   && mkdir build \
   && cd build \
